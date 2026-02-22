@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://bb3marxkb24mb"]
+
+[ext_resource type="Script" uid="uid://bjmx7c1hwp1sa" path="res://Scripts/Hype/Maps/HypeMapRoot.cs" id="1_dk7kt"]
+[ext_resource type="Script" uid="uid://cbh4dxvab5w8p" path="res://Scripts/Hype/Maps/HypeMapDefinition.cs" id="2_xvfyc"]
+
+[sub_resource type="Resource" id="Resource_yiqyi"]
+script = ExtResource("2_xvfyc")
+LevelName = "toras3"
+
+[node name="Toras3Map" type="Node3D" unique_id=132440812]
+script = ExtResource("1_dk7kt")
+MapDefinition = SubResource("Resource_yiqyi")

@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://cxtkf3fppnaxg"]
+
+[ext_resource type="Script" uid="uid://bjmx7c1hwp1sa" path="res://Scripts/Hype/Maps/HypeMapRoot.cs" id="1_8jxpo"]
+[ext_resource type="Script" uid="uid://cbh4dxvab5w8p" path="res://Scripts/Hype/Maps/HypeMapDefinition.cs" id="2_yw4m3"]
+
+[sub_resource type="Resource" id="Resource_3p42g"]
+script = ExtResource("2_yw4m3")
+LevelName = "ciel2"
+
+[node name="Ciel2Map" type="Node3D" unique_id=1565608147]
+script = ExtResource("1_8jxpo")
+MapDefinition = SubResource("Resource_3p42g")

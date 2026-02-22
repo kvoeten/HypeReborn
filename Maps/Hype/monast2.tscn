@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://cthn0llkbsc3p"]
+
+[ext_resource type="Script" uid="uid://bjmx7c1hwp1sa" path="res://Scripts/Hype/Maps/HypeMapRoot.cs" id="1_eitl7"]
+[ext_resource type="Script" uid="uid://cbh4dxvab5w8p" path="res://Scripts/Hype/Maps/HypeMapDefinition.cs" id="2_lycvk"]
+
+[sub_resource type="Resource" id="Resource_i0qos"]
+script = ExtResource("2_lycvk")
+LevelName = "monast2"
+
+[node name="Monast2Map" type="Node3D" unique_id=1982573174]
+script = ExtResource("1_eitl7")
+MapDefinition = SubResource("Resource_i0qos")
