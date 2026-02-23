@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
+using System.Threading.Tasks;
 using lzo.net;
 
 namespace HypeReborn.Hype.Runtime.Parsing;
@@ -67,7 +69,27 @@ public sealed class HypeRelocationTable
             throw new ArgumentException("Relocation table path is empty.", nameof(path));
         }
 
-        using var stream = File.OpenRead(path);
+        var bytes = File.ReadAllBytes(path);
+        return Parse(path, bytes, snaCompression);
+    }
+
+    public static async Task<HypeRelocationTable> LoadAsync(
+        string path,
+        bool snaCompression,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new ArgumentException("Relocation table path is empty.", nameof(path));
+        }
+
+        var bytes = await File.ReadAllBytesAsync(path, cancellationToken);
+        return Parse(path, bytes, snaCompression);
+    }
+
+    private static HypeRelocationTable Parse(string path, byte[] bytes, bool snaCompression)
+    {
+        using var stream = new MemoryStream(bytes, writable: false);
         using var reader = new BinaryReader(stream);
 
         if (!TryReadLayout(reader, path, snaCompression, hasExtraHeaderDword: false, out var parsed))

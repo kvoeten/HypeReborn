@@ -237,7 +237,11 @@ public partial class HypeBrowserDock : VBoxContainer
 
         try
         {
-            _currentIndex = HypeAssetIndexer.Build(gameRoot, language, includeResolvedMapAssets: true);
+            _currentIndex = HypeAssetIndexer.Build(
+                gameRoot,
+                language,
+                includeResolvedMapAssets: false,
+                forceRefresh: false);
             PopulateTree(_currentIndex);
 
             var parsedOk = _currentIndex.ParsedLevels.Count(x => x.Succeeded);
@@ -630,7 +634,7 @@ public partial class HypeBrowserDock : VBoxContainer
     private static string ToScenePath(string levelName)
     {
         var sceneName = NormalizeMapName(levelName);
-        return $"res://Maps/Hype/{sceneName}.tscn";
+        return $"res://Scenes/Hype/{sceneName}.tscn";
     }
 
     private bool TryRefreshOpenGeneratedMap(IReadOnlyList<string> generatedPaths, out string refreshedPath)

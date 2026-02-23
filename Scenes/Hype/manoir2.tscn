@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://mxebsahqspun"]
+
+[ext_resource type="Script" uid="uid://bjmx7c1hwp1sa" path="res://Scripts/Hype/Maps/HypeMapRoot.cs" id="1_o0ppp"]
+[ext_resource type="Script" uid="uid://cbh4dxvab5w8p" path="res://Scripts/Hype/Maps/HypeMapDefinition.cs" id="2_gkdpm"]
+
+[sub_resource type="Resource" id="Resource_36sfn"]
+script = ExtResource("2_gkdpm")
+LevelName = "manoir2"
+
+[node name="Manoir2Map" type="Node3D" unique_id=1609224453]
+script = ExtResource("1_o0ppp")
+MapDefinition = SubResource("Resource_36sfn")

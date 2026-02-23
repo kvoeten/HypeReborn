@@ -7,7 +7,8 @@ public enum HypeResolvedEntityKind
     Geometry,
     Light,
     ParticleSource,
-    AnimationAnchor
+    AnimationAnchor,
+    Actor
 }
 
 public sealed class HypeResolvedMeshSurface
@@ -38,4 +39,9 @@ public sealed class HypeResolvedEntity
     public bool FlipWinding { get; init; }
     public string? SourceFile { get; init; }
     public HypeResolvedMesh? Mesh { get; init; }
+    public string? ActorId { get; init; }
+    public bool IsMainActor { get; init; }
+    public bool IsSectorCharacterListMember { get; init; }
+    public bool IsTargettable { get; init; }
+    public uint CustomBits { get; init; }
 }

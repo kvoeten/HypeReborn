@@ -174,7 +174,7 @@ public partial class HypeMainMenu : Control
         }
 
         SetStatus(_mapPicker.ItemCount == 0
-            ? "No map scenes found in res://Maps/Hype. Generate maps in the Hype Browser first."
+            ? "No map scenes found in res://Scenes/Hype. Generate maps in the Hype Browser first."
             : $"Detected {_mapPicker.ItemCount} map scenes.");
     }
 
@@ -204,7 +204,7 @@ public partial class HypeMainMenu : Control
             return;
         }
 
-        var path = $"res://Maps/Hype/{mapName.ToLowerInvariant()}.tscn";
+        var path = $"res://Scenes/Hype/{mapName.ToLowerInvariant()}.tscn";
         OpenScene(path);
     }
 
@@ -259,7 +259,7 @@ public partial class HypeMainMenu : Control
     private static IReadOnlyList<string> DiscoverMapScenes()
     {
         var list = new List<string>();
-        var dir = DirAccess.Open("res://Maps/Hype");
+        var dir = DirAccess.Open("res://Scenes/Hype");
         if (dir == null)
         {
             return list;
@@ -269,7 +269,7 @@ public partial class HypeMainMenu : Control
         {
             if (fileName.EndsWith(".tscn", StringComparison.OrdinalIgnoreCase))
             {
-                list.Add($"res://Maps/Hype/{fileName}");
+                list.Add($"res://Scenes/Hype/{fileName}");
             }
         }
 

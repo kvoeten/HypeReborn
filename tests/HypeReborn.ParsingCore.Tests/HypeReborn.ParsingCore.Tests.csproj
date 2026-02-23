@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RunAnalyzers>false</RunAnalyzers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Scripts\Hype\Runtime\Compression\LzoNet\RingBuffer.cs" Link="Runtime\Compression\LzoNet\RingBuffer.cs" />
+    <Compile Include="..\..\Scripts\Hype\Runtime\Compression\LzoNet\LzoStream.cs" Link="Runtime\Compression\LzoNet\LzoStream.cs" />
+    <Compile Include="..\..\Scripts\Hype\Runtime\Parsing\HypeSnaImage.cs" Link="Runtime\Parsing\HypeSnaImage.cs" />
+    <Compile Include="..\..\Scripts\Hype\Runtime\Parsing\HypeRelocationTable.cs" Link="Runtime\Parsing\HypeRelocationTable.cs" />
+    <Compile Include="..\..\Scripts\Hype\Runtime\Parsing\Core\HypeAddress.cs" Link="Runtime\Parsing\Core\HypeAddress.cs" />
+    <Compile Include="..\..\Scripts\Hype\Runtime\Parsing\Core\HypeMemoryReader.cs" Link="Runtime\Parsing\Core\HypeMemoryReader.cs" />
+    <Compile Include="..\..\Scripts\Hype\Runtime\Parsing\Core\HypeRelocatedAddressSpace.cs" Link="Runtime\Parsing\Core\HypeRelocatedAddressSpace.cs" />
+  </ItemGroup>
+</Project>

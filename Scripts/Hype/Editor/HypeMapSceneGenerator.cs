@@ -9,8 +9,8 @@ namespace HypeReborn.Hype.Editor;
 [Tool]
 public static class HypeMapSceneGenerator
 {
-    private const string MapsRoot = "res://Maps/Hype";
-    private const string DefinitionsRoot = "res://Maps/Hype/Definitions";
+    private const string MapsRoot = "res://Scenes/Hype";
+    private const string DefinitionsRoot = "res://Scenes/Hype/Definitions";
 
     public static IReadOnlyList<string> GenerateMapScenes(IEnumerable<string> levelNames)
     {

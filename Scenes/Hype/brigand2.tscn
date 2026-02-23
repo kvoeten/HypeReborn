@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://8yv635kipc7n"]
+
+[ext_resource type="Script" uid="uid://bjmx7c1hwp1sa" path="res://Scripts/Hype/Maps/HypeMapRoot.cs" id="1_a4vkr"]
+[ext_resource type="Script" uid="uid://cbh4dxvab5w8p" path="res://Scripts/Hype/Maps/HypeMapDefinition.cs" id="2_hsdkk"]
+
+[sub_resource type="Resource" id="Resource_bww2o"]
+script = ExtResource("2_hsdkk")
+LevelName = "brigand2"
+
+[node name="Brigand2Map" type="Node3D" unique_id=1125816643]
+script = ExtResource("1_a4vkr")
+MapDefinition = SubResource("Resource_bww2o")

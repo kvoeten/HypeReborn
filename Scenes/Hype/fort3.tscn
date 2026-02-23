@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://c7cu5rge71kfo"]
+
+[ext_resource type="Script" uid="uid://bjmx7c1hwp1sa" path="res://Scripts/Hype/Maps/HypeMapRoot.cs" id="1_n711i"]
+[ext_resource type="Script" uid="uid://cbh4dxvab5w8p" path="res://Scripts/Hype/Maps/HypeMapDefinition.cs" id="2_fofjp"]
+
+[sub_resource type="Resource" id="Resource_rd7of"]
+script = ExtResource("2_fofjp")
+LevelName = "fort3"
+
+[node name="Fort3Map" type="Node3D" unique_id=1640803268]
+script = ExtResource("1_n711i")
+MapDefinition = SubResource("Resource_rd7of")

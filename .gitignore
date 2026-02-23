@@ -1,3 +1,6 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+tests/HypeReborn.ParsingCore.Tests/bin/
+tests/HypeReborn.ParsingCore.Tests/obj/
+*.log

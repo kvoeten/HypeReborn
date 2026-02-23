@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://dygg1icg180xn"]
+
+[ext_resource type="Script" uid="uid://bjmx7c1hwp1sa" path="res://Scripts/Hype/Maps/HypeMapRoot.cs" id="1_cc1gs"]
+[ext_resource type="Script" uid="uid://cbh4dxvab5w8p" path="res://Scripts/Hype/Maps/HypeMapDefinition.cs" id="2_02huk"]
+
+[sub_resource type="Resource" id="Resource_fupdy"]
+script = ExtResource("2_02huk")
+LevelName = "village4"
+
+[node name="Village4Map" type="Node3D" unique_id=732597339]
+script = ExtResource("1_cc1gs")
+MapDefinition = SubResource("Resource_fupdy")

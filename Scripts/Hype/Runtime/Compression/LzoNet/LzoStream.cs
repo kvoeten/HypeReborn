@@ -35,7 +35,7 @@ namespace lzo.net
         protected readonly Stream Source;
         private long? _length;
         private readonly bool _leaveOpen;
-        protected byte[] DecodedBuffer;
+        protected byte[]? DecodedBuffer;
         protected const int MaxWindowSize = (1 << 14) + ((255 & 8) << 11) + (255 << 6) + (255 >> 2);
         protected RingBuffer RingBuffer = new RingBuffer(MaxWindowSize);
         protected long OutputPosition;

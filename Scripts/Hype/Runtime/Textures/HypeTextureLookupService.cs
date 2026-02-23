@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Godot;
+using HypeReborn.Hype.Runtime;
 
 namespace HypeReborn.Hype.Runtime.Textures;
 
@@ -12,20 +13,43 @@ public static class HypeTextureLookupService
     private static readonly Dictionary<string, HypeCntFile> CntCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, HypeTextureLookupResult> TextureCache = new(StringComparer.OrdinalIgnoreCase);
 
+    public static void InvalidateCache(string? gameRoot = null)
+    {
+        if (string.IsNullOrWhiteSpace(gameRoot))
+        {
+            CntCache.Clear();
+            TextureCache.Clear();
+            return;
+        }
+
+        var normalizedRoot = gameRoot.Trim();
+        foreach (var key in CntCache.Keys.Where(k => k.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase)).ToArray())
+        {
+            CntCache.Remove(key);
+        }
+
+        foreach (var key in TextureCache.Keys.Where(k => k.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase)).ToArray())
+        {
+            TextureCache.Remove(key);
+        }
+    }
+
     public static Texture2D? TryGetTextureByTgaName(
         string gameRoot,
         string tgaName,
         uint textureFlags = 0,
-        uint textureAlphaMask = 0)
+        uint textureAlphaMask = 0,
+        bool forceColorKey = false)
     {
-        return TryGetTextureByTgaNameDetailed(gameRoot, tgaName, textureFlags, textureAlphaMask).Texture;
+        return TryGetTextureByTgaNameDetailed(gameRoot, tgaName, textureFlags, textureAlphaMask, forceColorKey).Texture;
     }
 
     public static HypeTextureLookupResult TryGetTextureByTgaNameDetailed(
         string gameRoot,
         string tgaName,
         uint textureFlags = 0,
-        uint textureAlphaMask = 0)
+        uint textureAlphaMask = 0,
+        bool forceColorKey = false)
     {
         if (string.IsNullOrWhiteSpace(gameRoot) || string.IsNullOrWhiteSpace(tgaName))
         {
@@ -38,7 +62,7 @@ public static class HypeTextureLookupService
             return HypeTextureLookupResult.Empty;
         }
 
-        var cacheKey = $"{gameRoot}::{candidateNames[0]}::{textureFlags:X8}:{textureAlphaMask:X8}";
+        var cacheKey = $"{gameRoot}::{candidateNames[0]}::{textureFlags:X8}:{textureAlphaMask:X8}:ck{(forceColorKey ? 1 : 0)}";
         if (TextureCache.TryGetValue(cacheKey, out var cached))
         {
             return cached;
@@ -56,14 +80,14 @@ public static class HypeTextureLookupService
             HypeCntFile.Entry? entry = null;
             foreach (var candidate in candidateNames)
             {
-                entry = cnt.FindByTgaName(candidate) ?? FindBySuffix(cnt, candidate);
+                entry = cnt.FindByTgaName(candidate) ?? cnt.FindUniqueByTgaSuffix(candidate);
                 if (entry != null)
                 {
                     break;
                 }
             }
 
-            entry ??= FindByUniqueFileName(cnt, Path.GetFileName(candidateNames[0]));
+            entry ??= cnt.FindUniqueByTgaFileName(Path.GetFileName(candidateNames[0]));
             if (entry == null)
             {
                 continue;
@@ -73,7 +97,7 @@ public static class HypeTextureLookupService
             {
                 var bytes = cnt.ReadEntryBytes(entry);
                 var image = HypeGfDecoder.Decode(bytes);
-                if (ShouldApplyColorKey(textureFlags))
+                if (ShouldApplyColorKey(textureFlags, textureAlphaMask, forceColorKey))
                 {
                     ApplyColorKeyAlpha(image, textureAlphaMask);
                 }
@@ -96,8 +120,14 @@ public static class HypeTextureLookupService
         return result;
     }
 
-    private static bool ShouldApplyColorKey(uint textureFlags)
+    private static bool ShouldApplyColorKey(uint textureFlags, uint textureAlphaMask, bool forceColorKey)
     {
+        if (forceColorKey)
+        {
+            return true;
+        }
+
+        _ = textureAlphaMask;
         return (textureFlags & TextureFlagColorKeyMask) != 0;
     }
 
@@ -160,31 +190,6 @@ public static class HypeTextureLookupService
         public bool HasPartialTransparency { get; }
 
         public static HypeTextureLookupResult Empty => new(null, false, false);
-    }
-
-    private static HypeCntFile.Entry? FindBySuffix(HypeCntFile cnt, string normalizedTgaName)
-    {
-        var matches = cnt.Entries
-            .Where(x => x.TgaName.EndsWith(normalizedTgaName, StringComparison.OrdinalIgnoreCase))
-            .Take(2)
-            .ToArray();
-
-        return matches.Length == 1 ? matches[0] : null;
-    }
-
-    private static HypeCntFile.Entry? FindByUniqueFileName(HypeCntFile cnt, string? fileName)
-    {
-        if (string.IsNullOrWhiteSpace(fileName))
-        {
-            return null;
-        }
-
-        var matches = cnt.Entries
-            .Where(x => Path.GetFileName(x.TgaName).Equals(fileName, StringComparison.OrdinalIgnoreCase))
-            .Take(2)
-            .ToArray();
-
-        return matches.Length == 1 ? matches[0] : null;
     }
 
     private static IEnumerable<string> GetCandidateContainers(string gameRoot)
@@ -277,13 +282,7 @@ public static class HypeTextureLookupService
             return string.Empty;
         }
 
-        var normalized = tgaName.Replace('/', '\\').Trim();
-        normalized = normalized.TrimStart('\\');
-        if (normalized.EndsWith(".gf", StringComparison.OrdinalIgnoreCase))
-        {
-            normalized = normalized[..^3] + ".tga";
-        }
-
-        return normalized;
+        var normalized = HypePathUtils.NormalizePathSeparators(tgaName.Trim()).TrimStart('\\');
+        return HypePathUtils.ChangeGfExtension(normalized);
     }
 }

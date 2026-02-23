@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using HypeReborn.Hype.Runtime.Parsing;
 using HypeReborn.Hype.Runtime.Textures;
 
@@ -11,8 +13,14 @@ public static class HypeAssetIndexer
 {
     private static readonly string[] CoreLevelExtensions = { ".sna", ".gpt", ".ptx", ".rtb", ".rtp", ".rtt", ".sda" };
     private static readonly string[] ScriptExtensions = { ".gpt", ".dlg", ".lng", ".rtd", ".rtg", ".rts", ".snd" };
+    private static readonly Dictionary<string, HypeAssetIndex> IndexCache = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly object CacheLock = new();
 
-    public static HypeAssetIndex Build(string gameRoot, string language, bool includeResolvedMapAssets = false)
+    public static HypeAssetIndex Build(
+        string gameRoot,
+        string language,
+        bool includeResolvedMapAssets = false,
+        bool forceRefresh = false)
     {
         if (!HypeInstallProbe.TryResolveGameRoot(gameRoot, out var resolvedRoot))
         {
@@ -20,6 +28,18 @@ public static class HypeAssetIndexer
         }
 
         var normalizedLanguage = string.IsNullOrWhiteSpace(language) ? "Dutch" : language.Trim();
+        var cacheKey = BuildCacheKey(resolvedRoot, normalizedLanguage, includeResolvedMapAssets);
+        if (!forceRefresh)
+        {
+            lock (CacheLock)
+            {
+                if (IndexCache.TryGetValue(cacheKey, out var cached))
+                {
+                    return cached;
+                }
+            }
+        }
+
         var levelsRoot = Path.Combine(resolvedRoot, "Gamedata", "World", "Levels");
         var languageLevelsRoot = Path.Combine(resolvedRoot, "LangData", normalizedLanguage, "world", "levels");
 
@@ -146,7 +166,7 @@ public static class HypeAssetIndexer
             ? BuildParsedMapAssets(resolvedRoot, levelRecords, animationRecords, parsedLevels)
             : Array.Empty<HypeParsedMapAssetRecord>();
 
-        return new HypeAssetIndex
+        var index = new HypeAssetIndex
         {
             GameRoot = resolvedRoot,
             Language = normalizedLanguage,
@@ -158,6 +178,66 @@ public static class HypeAssetIndexer
             ParsedLevels = parsedLevels,
             ParsedMapAssets = parsedMapAssets
         };
+
+        lock (CacheLock)
+        {
+            IndexCache[cacheKey] = index;
+        }
+
+        return index;
+    }
+
+    public static Task<HypeAssetIndex> BuildAsync(
+        string gameRoot,
+        string language,
+        bool includeResolvedMapAssets = false,
+        bool forceRefresh = false,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.Run(
+            () => Build(gameRoot, language, includeResolvedMapAssets, forceRefresh),
+            cancellationToken);
+    }
+
+    public static void InvalidateCache(string? gameRoot = null, string? language = null)
+    {
+        lock (CacheLock)
+        {
+            if (string.IsNullOrWhiteSpace(gameRoot) && string.IsNullOrWhiteSpace(language))
+            {
+                IndexCache.Clear();
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(gameRoot) &&
+                HypeInstallProbe.TryResolveGameRoot(gameRoot, out var resolvedRoot))
+            {
+                var rootPrefix = $"{resolvedRoot}::";
+                foreach (var key in IndexCache.Keys.Where(k => k.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase)).ToArray())
+                {
+                    if (string.IsNullOrWhiteSpace(language))
+                    {
+                        IndexCache.Remove(key);
+                        continue;
+                    }
+
+                    if (key.Contains($"::{language.Trim()}::", StringComparison.OrdinalIgnoreCase))
+                    {
+                        IndexCache.Remove(key);
+                    }
+                }
+
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(language))
+            {
+                foreach (var key in IndexCache.Keys.Where(k => k.Contains($"::{language.Trim()}::", StringComparison.OrdinalIgnoreCase)).ToArray())
+                {
+                    IndexCache.Remove(key);
+                }
+            }
+        }
     }
 
     private static IReadOnlyList<HypeParsedMapAssetRecord> BuildParsedMapAssets(
@@ -286,5 +366,10 @@ public static class HypeAssetIndexer
     {
         var ext = Path.GetExtension(fileName);
         return extensions.Any(x => ext.Equals(x, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string BuildCacheKey(string resolvedRoot, string normalizedLanguage, bool includeResolvedMapAssets)
+    {
+        return $"{resolvedRoot}::{normalizedLanguage}::{(includeResolvedMapAssets ? "maps1" : "maps0")}";
     }
 }

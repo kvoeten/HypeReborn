@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://duptpgqbo0dnn"]
+
+[ext_resource type="Script" uid="uid://bjmx7c1hwp1sa" path="res://Scripts/Hype/Maps/HypeMapRoot.cs" id="1_khat7"]
+[ext_resource type="Script" uid="uid://cbh4dxvab5w8p" path="res://Scripts/Hype/Maps/HypeMapDefinition.cs" id="2_gg13x"]
+
+[sub_resource type="Resource" id="Resource_kwm36"]
+script = ExtResource("2_gg13x")
+LevelName = "labo3"
+
+[node name="Labo3Map" type="Node3D" unique_id=917267655]
+script = ExtResource("1_khat7")
+MapDefinition = SubResource("Resource_kwm36")

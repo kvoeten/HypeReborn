@@ -1,8 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using HypeReborn.Hype.Config;
 using HypeReborn.Hype.Maps;
+using HypeReborn.Hype.Runtime.Characters;
+using HypeReborn.Hype.Runtime.Parsing;
+using HypeReborn.Hype.Runtime.Textures;
 
 namespace HypeReborn.Hype.Runtime;
 
@@ -88,13 +93,61 @@ public static class HypeAssetResolver
         };
     }
 
-    public static HypeAssetIndex BuildIndex(string? overrideRoot = null, string? overrideLanguage = null)
+    public static Task<HypeResolvedLevel> ResolveLevelAsync(
+        HypeMapDefinition definition,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.Run(() => ResolveLevel(definition), cancellationToken);
+    }
+
+    public static HypeAssetIndex BuildIndex(
+        string? overrideRoot = null,
+        string? overrideLanguage = null,
+        bool includeResolvedMapAssets = false,
+        bool forceRefresh = false)
     {
         var root = ResolveConfiguredGameRoot(overrideRoot);
         var language = string.IsNullOrWhiteSpace(overrideLanguage)
             ? HypeProjectSettings.GetDefaultLanguage()
             : overrideLanguage.Trim();
 
-        return HypeAssetIndexer.Build(root, language);
+        return HypeAssetIndexer.Build(
+            root,
+            language,
+            includeResolvedMapAssets,
+            forceRefresh);
+    }
+
+    public static async Task<HypeAssetIndex> BuildIndexAsync(
+        string? overrideRoot = null,
+        string? overrideLanguage = null,
+        bool includeResolvedMapAssets = false,
+        bool forceRefresh = false,
+        CancellationToken cancellationToken = default)
+    {
+        var root = ResolveConfiguredGameRoot(overrideRoot);
+        var language = string.IsNullOrWhiteSpace(overrideLanguage)
+            ? HypeProjectSettings.GetDefaultLanguage()
+            : overrideLanguage.Trim();
+
+        return await HypeAssetIndexer.BuildAsync(
+            root,
+            language,
+            includeResolvedMapAssets,
+            forceRefresh,
+            cancellationToken);
+    }
+
+    public static HypeActorCatalog BuildActorCatalog(string? overrideRoot = null)
+    {
+        return HypeActorCatalogService.BuildCatalog(overrideRoot);
+    }
+
+    public static void InvalidateCaches(string? overrideRoot = null, string? overrideLanguage = null)
+    {
+        HypeAssetIndexer.InvalidateCache(overrideRoot, overrideLanguage);
+        HypeActorCatalogService.InvalidateCache(overrideRoot);
+        HypeMontrealCharacterParser.InvalidateCache();
+        HypeTextureLookupService.InvalidateCache(overrideRoot);
     }
 }

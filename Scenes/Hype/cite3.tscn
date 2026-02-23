@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://bmy4b8yf10mye"]
+
+[ext_resource type="Script" uid="uid://bjmx7c1hwp1sa" path="res://Scripts/Hype/Maps/HypeMapRoot.cs" id="1_53da2"]
+[ext_resource type="Script" uid="uid://cbh4dxvab5w8p" path="res://Scripts/Hype/Maps/HypeMapDefinition.cs" id="2_3hm3r"]
+
+[sub_resource type="Resource" id="Resource_gulnr"]
+script = ExtResource("2_3hm3r")
+LevelName = "cite3"
+
+[node name="Cite3Map" type="Node3D" unique_id=1862768673]
+script = ExtResource("1_53da2")
+MapDefinition = SubResource("Resource_gulnr")

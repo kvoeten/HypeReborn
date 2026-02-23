@@ -39,13 +39,13 @@ public static class HypeLevelParser
     {
         var diagnostics = new List<HypeParseDiagnostic>(fix.Diagnostics);
 
-        TryGetLevelCoreFile(level, ".sna", out var lvlSnaPath);
-        TryGetLevelCoreFile(level, ".rtb", out var lvlRtbPath);
-        TryGetLevelCoreFile(level, ".rtp", out var lvlRtpPath);
-        TryGetLevelCoreFile(level, ".rtt", out var lvlRttPath);
-        TryGetLevelCoreFile(level, ".gpt", out var lvlGptPath);
-        TryGetLevelCoreFile(level, ".ptx", out var lvlPtxPath);
-        TryGetNamedCoreFile(level, "fixlvl.rtb", out var fixLvlRtbPath);
+        var lvlSnaPath = HypeBinaryLoadHelpers.GetLevelCoreFile(level, ".sna");
+        var lvlRtbPath = HypeBinaryLoadHelpers.GetLevelCoreFile(level, ".rtb");
+        var lvlRtpPath = HypeBinaryLoadHelpers.GetLevelCoreFile(level, ".rtp");
+        var lvlRttPath = HypeBinaryLoadHelpers.GetLevelCoreFile(level, ".rtt");
+        var lvlGptPath = HypeBinaryLoadHelpers.GetLevelCoreFile(level, ".gpt");
+        var lvlPtxPath = HypeBinaryLoadHelpers.GetLevelCoreFile(level, ".ptx");
+        var fixLvlRtbPath = HypeBinaryLoadHelpers.GetNamedCoreFile(level, "fixlvl.rtb");
 
         if (string.IsNullOrWhiteSpace(lvlSnaPath))
         {
@@ -170,12 +170,12 @@ public static class HypeLevelParser
     {
         var diagnostics = new List<HypeParseDiagnostic>();
 
-        var fixSnaPath = FindPath(levelsRoot, "fix.sna");
-        var fixRtbPath = FindPath(levelsRoot, "fix.rtb");
-        var fixRtpPath = FindPath(levelsRoot, "fix.rtp");
-        var fixRttPath = FindPath(levelsRoot, "fix.rtt");
-        var fixGptPath = FindPath(levelsRoot, "fix.gpt");
-        var fixPtxPath = FindPath(levelsRoot, "fix.ptx");
+        var fixSnaPath = HypeBinaryLoadHelpers.FindPath(levelsRoot, "fix.sna");
+        var fixRtbPath = HypeBinaryLoadHelpers.FindPath(levelsRoot, "fix.rtb");
+        var fixRtpPath = HypeBinaryLoadHelpers.FindPath(levelsRoot, "fix.rtp");
+        var fixRttPath = HypeBinaryLoadHelpers.FindPath(levelsRoot, "fix.rtt");
+        var fixGptPath = HypeBinaryLoadHelpers.FindPath(levelsRoot, "fix.gpt");
+        var fixPtxPath = HypeBinaryLoadHelpers.FindPath(levelsRoot, "fix.ptx");
 
         if (string.IsNullOrWhiteSpace(fixSnaPath))
         {
@@ -353,20 +353,10 @@ public static class HypeLevelParser
         string phase,
         List<HypeParseDiagnostic> diagnostics)
     {
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            return null;
-        }
-
-        try
-        {
-            return HypeRelocationTable.Load(path, snaCompression: true);
-        }
-        catch (Exception ex)
-        {
-            diagnostics.Add(Error(phase, $"Failed to parse relocation table '{path}': {ex.Message}"));
-            return null;
-        }
+        return HypeBinaryLoadHelpers.TryLoadRtb(
+            path,
+            string.IsNullOrWhiteSpace(path) ? phase : Path.GetFileName(path),
+            message => diagnostics.Add(Error(phase, message)));
     }
 
     private static HypeSnaImage? TryLoadSna(
@@ -374,20 +364,10 @@ public static class HypeLevelParser
         string phase,
         List<HypeParseDiagnostic> diagnostics)
     {
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            return null;
-        }
-
-        try
-        {
-            return HypeSnaImage.Load(path, snaCompression: true);
-        }
-        catch (Exception ex)
-        {
-            diagnostics.Add(Error(phase, $"Failed to parse SNA image '{path}': {ex.Message}"));
-            return null;
-        }
+        return HypeBinaryLoadHelpers.TryLoadSna(
+            path,
+            string.IsNullOrWhiteSpace(path) ? phase : Path.GetFileName(path),
+            message => diagnostics.Add(Error(phase, message)));
     }
 
     private static byte[]? TryLoadBytes(
@@ -395,49 +375,10 @@ public static class HypeLevelParser
         string phase,
         List<HypeParseDiagnostic> diagnostics)
     {
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            return null;
-        }
-
-        try
-        {
-            return File.ReadAllBytes(path);
-        }
-        catch (Exception ex)
-        {
-            diagnostics.Add(Error(phase, $"Failed to load file '{path}': {ex.Message}"));
-            return null;
-        }
-    }
-
-    private static bool TryGetLevelCoreFile(HypeLevelRecord level, string extension, out string path)
-    {
-        return TryGetNamedCoreFile(level, $"{level.LevelName}{extension}", out path);
-    }
-
-    private static bool TryGetNamedCoreFile(HypeLevelRecord level, string fileName, out string path)
-    {
-        path = string.Empty;
-        if (!level.CoreFiles.TryGetValue(fileName, out var candidate) || string.IsNullOrWhiteSpace(candidate))
-        {
-            return false;
-        }
-
-        path = candidate;
-        return true;
-    }
-
-    private static string? FindPath(string directory, string fileName)
-    {
-        if (!Directory.Exists(directory))
-        {
-            return null;
-        }
-
-        return Directory
-            .EnumerateFiles(directory)
-            .FirstOrDefault(path => Path.GetFileName(path).Equals(fileName, StringComparison.OrdinalIgnoreCase));
+        return HypeBinaryLoadHelpers.TryLoadBytes(
+            path,
+            string.IsNullOrWhiteSpace(path) ? phase : Path.GetFileName(path),
+            message => diagnostics.Add(Error(phase, message)));
     }
 
     private static HypeParseDiagnostic Error(string phase, string message)

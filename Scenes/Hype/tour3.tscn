@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://em13fxafi0ao"]
+
+[ext_resource type="Script" uid="uid://bjmx7c1hwp1sa" path="res://Scripts/Hype/Maps/HypeMapRoot.cs" id="1_cgdo8"]
+[ext_resource type="Script" uid="uid://cbh4dxvab5w8p" path="res://Scripts/Hype/Maps/HypeMapDefinition.cs" id="2_vfsmy"]
+
+[sub_resource type="Resource" id="Resource_w5jg8"]
+script = ExtResource("2_vfsmy")
+LevelName = "tour3"
+
+[node name="Tour3Map" type="Node3D" unique_id=607480721]
+script = ExtResource("1_cgdo8")
+MapDefinition = SubResource("Resource_w5jg8")
