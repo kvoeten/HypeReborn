@@ -1,9 +1,7 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://Scripts/Hype/Player/HypeCharacterRoot.cs" id="1"]
-[ext_resource type="Script" path="res://Scripts/Hype/Player/HypeCharacterInputAdapter.cs" id="2"]
-[ext_resource type="Script" path="res://Scripts/Hype/Player/HypePlayerCameraRig.cs" id="3"]
-[ext_resource type="Script" path="res://Scripts/Hype/Player/HypeCharacterVisualDriver.cs" id="4"]
+[ext_resource type="Script" path="res://Scripts/Hype/Player/HypeCharacterVisualDriver.cs" id="2"]
 
 [sub_resource type="CapsuleShape3D" id="1"]
 radius = 0.35
@@ -11,15 +9,10 @@ height = 1.25
 
 [node name="HypePlayer" type="CharacterBody3D"]
 script = ExtResource("1")
+controlled_by_player_controller = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("1")
 
-[node name="InputAdapter" type="Node" parent="."]
-script = ExtResource("2")
-
-[node name="CameraRig" type="Node3D" parent="."]
-script = ExtResource("3")
-
 [node name="VisualDriver" type="Node3D" parent="."]
-script = ExtResource("4")
+script = ExtResource("2")

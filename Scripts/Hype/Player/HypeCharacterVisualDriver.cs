@@ -10,7 +10,11 @@ using HypeReborn.Hype.Runtime.Rendering;
 namespace HypeReborn.Hype.Player;
 
 [Tool]
-public partial class HypeCharacterVisualDriver : Node3D
+/// <summary>
+/// Legacy Montreal actor visual controller.
+/// Uses parsed actor channels/frames and maps motor state to frame ranges.
+/// </summary>
+public partial class HypeCharacterVisualDriver : Node3D, ICharacterVisualController
 {
     [Export]
     public string SourceLevelName { get; set; } = string.Empty;
@@ -44,6 +48,9 @@ public partial class HypeCharacterVisualDriver : Node3D
 
     [Export]
     public bool AlignVisualToCapsuleBottom { get; set; } = true;
+
+    [Export]
+    public float VisualYawOffsetDegrees { get; set; } = -90f;
 
     [Export]
     public int IdleStartFrame { get; set; } = -1;
@@ -93,6 +100,9 @@ public partial class HypeCharacterVisualDriver : Node3D
     [Export]
     public float AirSpeedScale { get; set; } = 1f;
 
+    [Export]
+    public float PlaybackSmoothingSharpness { get; set; } = 10f;
+
     private static readonly Dictionary<string, Mesh> CharacterObjectMeshCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly object CharacterObjectMeshCacheLock = new();
 
@@ -106,6 +116,7 @@ public partial class HypeCharacterVisualDriver : Node3D
         EnsureVisualLoaded();
     }
 
+    /// <inheritdoc />
     public void SetActorSelection(string actorKey, bool persistToSave)
     {
         SourceActorKey = actorKey?.Trim() ?? string.Empty;
@@ -119,6 +130,10 @@ public partial class HypeCharacterVisualDriver : Node3D
         RebuildVisual();
     }
 
+    /// <summary>
+    /// Legacy helper for callers that still resolve actor by level+id pair.
+    /// Preferred entry point for new systems is <see cref="SetActorSelection(string,bool)"/>.
+    /// </summary>
     public void SetActorSelection(string levelName, string actorId, bool persistToSave)
     {
         SourceActorKey = string.Empty;
@@ -132,6 +147,7 @@ public partial class HypeCharacterVisualDriver : Node3D
         RebuildVisual();
     }
 
+    /// <inheritdoc />
     public void ApplyState(HypeCharacterMotorState state, float delta)
     {
         EnsureVisualLoaded();
@@ -140,10 +156,11 @@ public partial class HypeCharacterVisualDriver : Node3D
             return;
         }
 
-        _animator.SetMotion(ResolveMotionState(state.MovementState), state.HorizontalSpeed);
+        _animator.SetMotion(ResolveMotionState(state.LocomotionState), state.HorizontalSpeed);
         AdvanceAnimation(delta);
     }
 
+    /// <inheritdoc />
     public void RebuildVisual()
     {
         if (_visualRoot != null)
@@ -229,7 +246,11 @@ public partial class HypeCharacterVisualDriver : Node3D
         AddChild(_visualRoot);
         _visualRoot.Owner = Owner;
 
-        var rigRoot = new Node3D { Name = "RigRoot" };
+        var rigRoot = new Node3D
+        {
+            Name = "RigRoot",
+            Rotation = new Vector3(0f, Mathf.DegToRad(VisualYawOffsetDegrees), 0f)
+        };
         _visualRoot.AddChild(rigRoot);
         rigRoot.Owner = Owner;
 
@@ -382,6 +403,7 @@ public partial class HypeCharacterVisualDriver : Node3D
         _runtime.CurrentFrame = frameIndex;
     }
 
+    /// <inheritdoc />
     public void ConfigureSpeedReferences(float walkSpeed, float runSpeed)
     {
         if (walkSpeed > 0f)
@@ -402,6 +424,7 @@ public partial class HypeCharacterVisualDriver : Node3D
             PauseWhenIdle = PauseWhenIdle,
             UseMovementDrivenAnimation = UseMovementDrivenAnimation,
             AnimationSpeedMultiplier = AnimationSpeedMultiplier,
+            PlaybackSmoothingSharpness = PlaybackSmoothingSharpness,
             IdleStartFrame = IdleStartFrame,
             IdleEndFrame = IdleEndFrame,
             WalkStartFrame = WalkStartFrame,
@@ -421,29 +444,16 @@ public partial class HypeCharacterVisualDriver : Node3D
         };
     }
 
-    private static HypeMotionAnimationState ResolveMotionState(string movementState)
+    private static HypeMotionAnimationState ResolveMotionState(HypeLocomotionState locomotionState)
     {
-        if (movementState.Equals("Run", StringComparison.OrdinalIgnoreCase))
+        return locomotionState switch
         {
-            return HypeMotionAnimationState.Run;
-        }
-
-        if (movementState.Equals("Walk", StringComparison.OrdinalIgnoreCase))
-        {
-            return HypeMotionAnimationState.Walk;
-        }
-
-        if (movementState.Equals("Jump", StringComparison.OrdinalIgnoreCase))
-        {
-            return HypeMotionAnimationState.Jump;
-        }
-
-        if (movementState.Equals("Fall", StringComparison.OrdinalIgnoreCase))
-        {
-            return HypeMotionAnimationState.Fall;
-        }
-
-        return HypeMotionAnimationState.Idle;
+            HypeLocomotionState.Walk => HypeMotionAnimationState.Walk,
+            HypeLocomotionState.Run => HypeMotionAnimationState.Run,
+            HypeLocomotionState.Jump => HypeMotionAnimationState.Jump,
+            HypeLocomotionState.Fall => HypeMotionAnimationState.Fall,
+            _ => HypeMotionAnimationState.Idle
+        };
     }
 
     private void ApplyVisualAlignment()
@@ -476,6 +486,10 @@ public partial class HypeCharacterVisualDriver : Node3D
         foreach (var meshInstance in EnumerateMeshInstances(_visualRoot))
         {
             if (meshInstance.Mesh == null)
+            {
+                continue;
+            }
+            if (!meshInstance.IsVisibleInTree())
             {
                 continue;
             }

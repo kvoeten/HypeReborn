@@ -200,7 +200,11 @@ public static partial class HypeMontrealCharacterParser
                     return null;
                 }
 
-                if (!TryParseMontrealAnimation(offAnimation.Value, out var frames, out var channelCount))
+                if (!TryParseMontrealAnimation(
+                    offAnimation.Value,
+                    out var frames,
+                    out var channelCount,
+                    out var animationSpeedHint))
                 {
                     return null;
                 }
@@ -213,7 +217,7 @@ public static partial class HypeMontrealCharacterParser
                     IsSectorCharacterListMember = isSectorCharacterMember,
                     IsTargettable = isTargettable,
                     CustomBits = customBits,
-                    FramesPerSecond = Math.Max(1f, stateSpeed),
+                    FramesPerSecond = Math.Max(1f, animationSpeedHint > 0f ? animationSpeedHint : stateSpeed),
                     ChannelCount = channelCount,
                     Objects = objectVisuals.Values.OrderBy(x => x.ObjectIndex).ToArray(),
                     Frames = frames
@@ -239,17 +243,19 @@ public static partial class HypeMontrealCharacterParser
         private bool TryParseMontrealAnimation(
             HypeAddress animationAddress,
             out IReadOnlyList<HypeCharacterFrameAsset> frames,
-            out int channelCount)
+            out int channelCount,
+            out float animationSpeedHint)
         {
             frames = Array.Empty<HypeCharacterFrameAsset>();
             channelCount = 0;
+            animationSpeedHint = 0f;
 
             try
             {
                 var reader = _space.CreateReader(animationAddress);
                 var offFrames = reader.ReadPointer();
                 var numFrames = reader.ReadByte();
-                _ = reader.ReadByte();
+                var animationSpeed = reader.ReadByte();
                 var numChannels = reader.ReadByte();
                 _ = reader.ReadByte();
                 _ = reader.ReadPointer();
@@ -269,13 +275,14 @@ public static partial class HypeMontrealCharacterParser
                 }
 
                 channelCount = numChannels;
+                animationSpeedHint = animationSpeed;
                 var frameList = new List<HypeCharacterFrameAsset>(numFrames);
                 for (var frameIndex = 0; frameIndex < numFrames; frameIndex++)
                 {
                     var frameReader = _space.CreateReader(offFrames.Value.Add(frameIndex * 16));
                     var offChannels = frameReader.ReadPointer();
                     _ = frameReader.ReadPointer();
-                    _ = frameReader.ReadPointer();
+                    var offTranslationSpeed = frameReader.ReadPointer();
                     var offHierarchies = frameReader.ReadPointer();
 
                     var samples = new HypeCharacterChannelSample[numChannels];
@@ -320,10 +327,17 @@ public static partial class HypeMontrealCharacterParser
                         }
                     }
 
+                    var translationSpeed = Vector3.Zero;
+                    if (offTranslationSpeed.HasValue)
+                    {
+                        translationSpeed = ReadTranslationSpeed(offTranslationSpeed.Value);
+                    }
+
                     frameList.Add(new HypeCharacterFrameAsset
                     {
                         ChannelSamples = samples,
-                        ParentChannelIndices = parentByChannel
+                        ParentChannelIndices = parentByChannel,
+                        TranslationSpeed = translationSpeed
                     });
                 }
 
@@ -334,6 +348,23 @@ public static partial class HypeMontrealCharacterParser
             {
                 _diagnostics.Add($"Failed to parse Montreal animation {animationAddress}: {ex.Message}");
                 return false;
+            }
+        }
+
+        private Vector3 ReadTranslationSpeed(HypeAddress translationSpeedAddress)
+        {
+            try
+            {
+                var reader = _space.CreateReader(translationSpeedAddress);
+                var x = reader.ReadSingle();
+                var y = reader.ReadSingle();
+                var z = reader.ReadSingle();
+                // Runtime uses Montreal XZY coordinate conversion for parsed vectors.
+                return new Vector3(x, z, -y);
+            }
+            catch
+            {
+                return Vector3.Zero;
             }
         }
 

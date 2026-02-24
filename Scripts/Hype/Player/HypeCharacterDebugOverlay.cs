@@ -79,7 +79,7 @@ public partial class HypeCharacterDebugOverlay : CanvasLayer
         actorLayout.AddChild(_actorStatusLabel);
     }
 
-    public void UpdateState(HypeCharacterMotorState state, Vector3 position)
+    public void UpdateState(HypeCharacterMotorState state, HypeMovementModelKind movementModel, Vector3 position)
     {
         if (_stateLabel == null)
         {
@@ -87,9 +87,11 @@ public partial class HypeCharacterDebugOverlay : CanvasLayer
         }
 
         _stateLabel.Text =
+            $"Movement: {movementModel}\n" +
             $"State: {state.MovementState}\n" +
             $"Grounded: {state.Grounded}\n" +
             $"Speed: {state.HorizontalSpeed:0.00}\n" +
+            $"Vertical: {state.VerticalSpeed:0.00}\n" +
             $"Pos: {position.X:0.00}, {position.Y:0.00}, {position.Z:0.00}";
     }
 

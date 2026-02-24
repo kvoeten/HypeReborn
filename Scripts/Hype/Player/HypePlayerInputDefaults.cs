@@ -11,6 +11,7 @@ public static class HypePlayerInputDefaults
     public const string ActionJump = "hype_jump";
     public const string ActionSprint = "hype_sprint";
     public const string ActionInteract = "hype_interact";
+    public const string ActionToggleMovementModel = "hype_toggle_movement_model";
     public const string ActionMouseCaptureToggle = "hype_mouse_capture_toggle";
 
     public static void EnsureDefaults()
@@ -22,6 +23,7 @@ public static class HypePlayerInputDefaults
         EnsureAction(ActionJump, Key.Space);
         EnsureAction(ActionSprint, Key.Shift);
         EnsureAction(ActionInteract, Key.E);
+        EnsureAction(ActionToggleMovementModel, Key.F6);
         EnsureAction(ActionMouseCaptureToggle, Key.Escape);
     }
 

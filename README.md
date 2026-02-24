@@ -32,4 +32,5 @@ While entirely custom, the application uses the original map data, assets, scrip
 - Character visual source: parsed from original Hype level data at runtime (no placeholder fallback)
 - Actor system: scans Montreal Perso actors across levels, classifies humanoid candidates, and persists selected player actor in `user://hype_player_actor_state.json`
 - Debug picker: runtime actor dropdown in the player debug overlay lets you swap to any discovered actor and persists selection
-- First-step controls: `WASD`, mouse look, `Shift` sprint, `Space` jump, `E` interact placeholder, `Esc` mouse capture toggle.
+- Movement models: `Classic` (default) and `Modern`, switchable at runtime for validation.
+- Controls: `WASD`, mouse look, `Shift` sprint, `Space` jump, `E` interact placeholder, `F6` movement model toggle, `Esc` mouse capture toggle.

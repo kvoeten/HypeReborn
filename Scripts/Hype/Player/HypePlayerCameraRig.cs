@@ -34,6 +34,8 @@ public partial class HypePlayerCameraRig : Node3D
 
     public override void _Ready()
     {
+        // Keep camera world-space stable even when the character rotates.
+        TopLevel = true;
         EnsureRigHierarchy();
     }
 
@@ -64,6 +66,11 @@ public partial class HypePlayerCameraRig : Node3D
 
     public void BindTarget(Node3D target)
     {
+        if (_target == target)
+        {
+            return;
+        }
+
         _target = target;
         var basis = target.GlobalBasis;
         _yaw = basis.GetEuler().Y;

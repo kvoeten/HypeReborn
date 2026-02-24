@@ -9,13 +9,15 @@ public readonly struct HypeCharacterCommand
         Vector2 lookInput,
         bool jumpPressed,
         bool sprintHeld,
-        bool interactPressed)
+        bool interactPressed,
+        bool toggleMovementModelPressed)
     {
         MoveInput = moveInput;
         LookInput = lookInput;
         JumpPressed = jumpPressed;
         SprintHeld = sprintHeld;
         InteractPressed = interactPressed;
+        ToggleMovementModelPressed = toggleMovementModelPressed;
     }
 
     public Vector2 MoveInput { get; }
@@ -23,11 +25,13 @@ public readonly struct HypeCharacterCommand
     public bool JumpPressed { get; }
     public bool SprintHeld { get; }
     public bool InteractPressed { get; }
+    public bool ToggleMovementModelPressed { get; }
 
     public static HypeCharacterCommand Empty => new(
         Vector2.Zero,
         Vector2.Zero,
         jumpPressed: false,
         sprintHeld: false,
-        interactPressed: false);
+        interactPressed: false,
+        toggleMovementModelPressed: false);
 }

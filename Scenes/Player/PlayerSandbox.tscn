@@ -1,6 +1,7 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="PackedScene" path="res://Scenes/Player/HypePlayer.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://Scenes/Player/HypePlayerController.tscn" id="2"]
 
 [sub_resource type="BoxMesh" id="1"]
 size = Vector3(120, 1, 120)
@@ -8,11 +9,25 @@ size = Vector3(120, 1, 120)
 [sub_resource type="BoxShape3D" id="2"]
 size = Vector3(120, 1, 120)
 
-[sub_resource type="StandardMaterial3D" id="3"]
-albedo_color = Color(0.247059, 0.278431, 0.313726, 1)
-roughness = 0.88
+[sub_resource type="Shader" id="3"]
+code = "shader_type spatial;\nrender_mode cull_back;\n\nuniform vec4 base_color : source_color = vec4(0.17, 0.19, 0.22, 1.0);\nuniform vec4 line_color : source_color = vec4(0.70, 0.85, 1.0, 1.0);\nuniform float cell_size = 1.0;\nuniform float line_width = 0.045;\n\nvoid fragment() {\n\tvec2 coord = WORLD_POSITION.xz / max(cell_size, 0.001);\n\tvec2 grid = abs(fract(coord) - 0.5);\n\tfloat line = min(grid.x, grid.y);\n\tfloat mask = 1.0 - smoothstep(0.0, line_width, line);\n\tALBEDO = mix(base_color.rgb, line_color.rgb, mask);\n\tROUGHNESS = 0.9;\n\tMETALLIC = 0.0;\n}\n"
 
-[sub_resource type="Environment" id="4"]
+[sub_resource type="ShaderMaterial" id="4"]
+shader = SubResource("3")
+shader_parameter/cell_size = 1.0
+shader_parameter/line_width = 0.035
+
+[sub_resource type="BoxMesh" id="5"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxShape3D" id="6"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="StandardMaterial3D" id="7"]
+albedo_color = Color(0.807843, 0.52549, 0.298039, 1)
+roughness = 0.85
+
+[sub_resource type="Environment" id="8"]
 background_mode = 2
 background_color = Color(0.117647, 0.137255, 0.176471, 1)
 ambient_light_source = 3
@@ -22,7 +37,7 @@ ambient_light_energy = 0.4
 [node name="PlayerSandbox" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("4")
+environment = SubResource("8")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 rotation = Vector3(-0.891863, 0.846484, 0)
@@ -38,7 +53,66 @@ shape = SubResource("2")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
 position = Vector3(0, -0.5, 0)
 mesh = SubResource("1")
-material_override = SubResource("3")
+material_override = SubResource("4")
+
+[node name="Obstacles" type="Node3D" parent="."]
+
+[node name="ObstacleA" type="StaticBody3D" parent="Obstacles"]
+position = Vector3(5.5, 1, 6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Obstacles/ObstacleA"]
+shape = SubResource("6")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Obstacles/ObstacleA"]
+mesh = SubResource("5")
+material_override = SubResource("7")
+
+[node name="ObstacleB" type="StaticBody3D" parent="Obstacles"]
+position = Vector3(-6, 1, 8)
+scale = Vector3(1.6, 1, 1)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Obstacles/ObstacleB"]
+shape = SubResource("6")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Obstacles/ObstacleB"]
+mesh = SubResource("5")
+material_override = SubResource("7")
+
+[node name="ObstacleC" type="StaticBody3D" parent="Obstacles"]
+position = Vector3(2, 1, -6)
+scale = Vector3(1, 1.6, 1)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Obstacles/ObstacleC"]
+shape = SubResource("6")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Obstacles/ObstacleC"]
+mesh = SubResource("5")
+material_override = SubResource("7")
+
+[node name="ObstacleD" type="StaticBody3D" parent="Obstacles"]
+position = Vector3(-8.5, 1, -3)
+scale = Vector3(1, 1, 2.2)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Obstacles/ObstacleD"]
+shape = SubResource("6")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Obstacles/ObstacleD"]
+mesh = SubResource("5")
+material_override = SubResource("7")
+
+[node name="ObstacleE" type="StaticBody3D" parent="Obstacles"]
+position = Vector3(8.5, 1, -1)
+scale = Vector3(2.4, 1, 1)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Obstacles/ObstacleE"]
+shape = SubResource("6")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Obstacles/ObstacleE"]
+mesh = SubResource("5")
+material_override = SubResource("7")
 
 [node name="HypePlayer" parent="." instance=ExtResource("1")]
 position = Vector3(0, 1, 0)
+
+[node name="HypePlayerController" parent="." instance=ExtResource("2")]
+controlled_character_path = NodePath("../HypePlayer")

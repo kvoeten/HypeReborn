@@ -28,6 +28,7 @@ public sealed class HypeCharacterFrameAsset
 {
     public required HypeCharacterChannelSample[] ChannelSamples { get; init; }
     public required int[] ParentChannelIndices { get; init; }
+    public required Vector3 TranslationSpeed { get; init; }
 }
 
 public sealed class HypeCharacterActorAsset

@@ -36,10 +36,19 @@ public partial class HypeCharacterDefinition : Resource
     public float JumpVelocity { get; set; } = 7.6f;
 
     [Export]
+    public bool JumpAbsolute { get; set; } = true;
+
+    [Export]
+    public bool JumpWithoutAddingSpeed { get; set; } = true;
+
+    [Export]
     public float MaxSlopeDegrees { get; set; } = 45f;
 
     [Export]
     public float FloorStickVelocity { get; set; } = 1.4f;
+
+    [Export]
+    public float BrakeDecelerationMultiplier { get; set; } = 1.35f;
 
     [Export]
     public float CapsuleRadius { get; set; } = 0.35f;

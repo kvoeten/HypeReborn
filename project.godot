@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="HypeReborn"
-run/main_scene="res://Scenes/HypeMainMenu.tscn"
+run/main_scene="res://Scenes/HypeStartup.tscn"
 config/features=PackedStringArray("4.6", "C#", "Mobile")
 config/icon="res://icon.svg"
 

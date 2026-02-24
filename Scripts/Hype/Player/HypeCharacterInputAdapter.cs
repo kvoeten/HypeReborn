@@ -47,7 +47,8 @@ public partial class HypeCharacterInputAdapter : Node, ICharacterCommandSource
             lookInput: _lookDelta,
             jumpPressed: Input.IsActionJustPressed(HypePlayerInputDefaults.ActionJump),
             sprintHeld: Input.IsActionPressed(HypePlayerInputDefaults.ActionSprint),
-            interactPressed: Input.IsActionJustPressed(HypePlayerInputDefaults.ActionInteract));
+            interactPressed: Input.IsActionJustPressed(HypePlayerInputDefaults.ActionInteract),
+            toggleMovementModelPressed: Input.IsActionJustPressed(HypePlayerInputDefaults.ActionToggleMovementModel));
 
         _lookDelta = Vector2.Zero;
         return command;
